@@ -57,7 +57,7 @@ public class Main {
     }
 
     private static void startGame(final Map<String, String> positions) {
-        if (nonNull(board)){
+        if (nonNull(board)) {
             System.out.println("O jogo já foi iniciado");
             return;
         }
@@ -66,19 +66,31 @@ public class Main {
         for (int i = 0; i < BOARD_LIMIT; i++) {
             spaces.add(new ArrayList<>());
             for (int j = 0; j < BOARD_LIMIT; j++) {
-                var positionConfig = positions.get("%s,%s".formatted(i, j));
-                var expected = Integer.parseInt(positionConfig.split(",")[0]);
-                var fixed = Boolean.parseBoolean(positionConfig.split(",")[1]);
-                var currentSpace = new Space(expected, fixed);
-                spaces.get(i).add(currentSpace);
+                String key = String.format("%s,%s", i, j);
+                String positionConfig = positions.get(key);
+
+                // Validação para evitar NullPointerException
+                if (positionConfig == null) {
+                    System.out.printf("Erro: Posição [%s,%s] não encontrada. Usando valores padrão.\n", i, j);
+                    spaces.get(i).add(new Space(0, false)); // Valores padrão
+                    continue;
+                }
+
+                try {
+                    String[] configParts = positionConfig.split(",");
+                    int expected = Integer.parseInt(configParts[0]);
+                    boolean fixed = Boolean.parseBoolean(configParts[1]);
+                    spaces.get(i).add(new Space(expected, fixed));
+                } catch (Exception e) {
+                    System.out.printf("Erro ao processar posição [%s,%s]: %s\n", i, j, e.getMessage());
+                    spaces.get(i).add(new Space(0, false)); // Valores padrão
+                }
             }
         }
 
         board = new Board(spaces);
-        System.out.println("O jogo está pronto para começar");
+        System.out.println("O jogo está pronto para começar!");
     }
-
-
     private static void inputNumber() {
         if (isNull(board)){
             System.out.println("O jogo ainda não foi iniciado iniciado");
